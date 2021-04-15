@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    All the movies
+{% endblock %}
+
+{% block main %}
+    <ul>
+        {% for movie in object_list %}
+            <li>
+                <a href="{% url "main:movie_detail" movie.pk %}">{{ movie.title }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+    {% include 'mainapp/pagination.html' %}
+{% endblock %}
