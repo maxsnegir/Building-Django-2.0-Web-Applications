@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 
-from .models import Movie, Vote
+from .models import Movie, Vote, MovieImage
 
 User = get_user_model()
 
@@ -26,3 +26,16 @@ class VoteForm(forms.ModelForm):
     class Meta:
         model = Vote
         fields = '__all__'
+
+
+class MovieImageForm(forms.ModelForm):
+    movie = forms.ModelChoiceField(queryset=Movie.objects.all(),
+                                   widget=forms.HiddenInput,
+                                   disabled=True)
+    user = forms.ModelChoiceField(queryset=User.objects.all(),
+                                  widget=forms.HiddenInput,
+                                  disabled=True)
+
+    class Meta:
+        model = MovieImage
+        fields = ('image', 'movie', 'user')

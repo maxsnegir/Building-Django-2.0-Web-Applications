@@ -4,7 +4,7 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.views import generic
 
-from .forms import VoteForm
+from .forms import VoteForm, MovieImageForm
 from .models import Movie, Person, Vote
 
 
@@ -20,6 +20,7 @@ class MovieDetail(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
+
             vote = Vote.objects.get_vote_or_unsaved_blank_vote(
                 movie=self.object,
                 user=self.request.user)
@@ -34,6 +35,7 @@ class MovieDetail(generic.DetailView):
             vote_form = VoteForm(instance=vote)
             context['vote_form'] = vote_form
             context['vote_form_url'] = vote_form_url
+            context['image_form'] = MovieImageForm()
 
         return context
 
@@ -82,3 +84,31 @@ class UpdateVote(LoginRequiredMixin, generic.UpdateView):
         movie_detail_url = reverse('main:movie_detail',
                                    kwargs={'pk': movie_id})
         return redirect(movie_detail_url)
+
+
+class MovieImageUploadView(LoginRequiredMixin, generic.CreateView):
+    form_class = MovieImageForm
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['user'] = self.request.user
+        initial['movie'] = self.kwargs['movie_id']
+        return initial
+
+    def get_success_url(self):
+        movie_id = self.kwargs['movie_id']
+        movie_detail_url = reverse('main:movie_detail',
+                                   kwargs={'pk': movie_id})
+        return movie_detail_url
+
+    def render_to_response(self, context, **response_kwargs):
+        movie_id = self.kwargs['movie_id']
+        movie_detail_url = reverse('main:movie_detail',
+                                   kwargs={'pk': movie_id})
+        return redirect(movie_detail_url)
+
+
+class TopMovies(generic.ListView):
+    model = Movie
+    queryset = Movie.objects.top_movies(limit=10)
+    template_name = 'mainapp/top_movies_list.html'

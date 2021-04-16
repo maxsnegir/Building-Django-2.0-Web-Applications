@@ -1,6 +1,10 @@
+import uuid
+
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import Sum
+
+User = get_user_model()
 
 
 class MovieManager(models.Manager):
@@ -14,6 +18,12 @@ class MovieManager(models.Manager):
         qs = self.all_with_related_persons()
         return qs.annotate(score=Sum('vote__value'))
 
+    def top_movies(self, limit=10):
+        qs = self.get_queryset()
+        qs = qs.annotate(vote_sum=Sum('vote__value'))
+        qs = qs.exclude(vote_sum=None)
+        qs = qs.order_by('-vote_sum')[:limit]
+        return qs
 
 
 class Movie(models.Model):
@@ -104,7 +114,7 @@ class Vote(models.Model):
     )
 
     value = models.SmallIntegerField(choices=VALUE_CHOICES)
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
     voted_on = models.DateTimeField(auto_now=True)
 
@@ -115,3 +125,14 @@ class Vote(models.Model):
 
     def __str__(self):
         return f"{self.user} {self.movie} {self.value}"
+
+
+def movie_directory_path_with_uuid(instance, filename):
+    return f"{instance.movie_id}/{uuid.uuid4()}"
+
+
+class MovieImage(models.Model):
+    image = models.ImageField(upload_to=movie_directory_path_with_uuid)
+    uploaded = models.DateTimeField(auto_now_add=True)
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)

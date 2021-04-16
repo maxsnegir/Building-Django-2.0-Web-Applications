@@ -5,10 +5,22 @@
 {% endblock %}
 
 {% block main %}
-    <h1>{{ object.title }}</h1>
-    <p class="lead">
-        {{ object.plot }}
-    </p>
+    <div class="col">
+        <h1>{{ object.title }}</h1>
+        <p class="lead">{{ object.plot }}</p>
+    </div>
+
+    <ul class="movie-image list-inline">
+        {% for image in object.movieimage_set.all %}
+            <li class="list-inline-item">
+                <img src="{{ image.image.url }}" width="50px" height="50px" alt="">
+            </li>
+        {% endfor %}
+
+        <p>
+            Directed by {{ object.director }}
+        </p>
+    </ul>
 {% endblock %}
 
 {% block sidebar %}
@@ -16,13 +28,25 @@
         This movie is rated:
         <span class="badge badge-primary">{{ object.get_rating_display }}</span>
     </div>
+    {% if image_form %}
+        <div>
+            <h2>Upload New Image</h2>
+            <form action="{% url "main:movie_image_upload" object.id %}"
+                  method="post" enctype="multipart/form-data">
+                {{ image_form.as_p }}
+                {% csrf_token %}
+                <button class="btn btn-primary">Upload Image</button>
+            </form>
+        </div>
+
+    {% endif %}
 
     <div>
-    <div>
-        <h2>
-            Score: {{ object.score|default_if_none:"TBD" }}
-        </h2>
-    </div>
+        <div>
+            <h2>
+                Score: {{ object.score|default_if_none:"TBD" }}
+            </h2>
+        </div>
         {% if vote_form %}
             <form action="{{ vote_form_url }}" method="post">
                 {% csrf_token %}
@@ -33,4 +57,5 @@
             <p>Log in to vote for this movie</p>
         {% endif %}
     </div>
+
 {% endblock %}
