@@ -135,6 +135,12 @@ LOGIN_REDIRECT_URL = 'qanda:index'
 LOGOUT_REDIRECT_URL = 'qanda:index'
 
 
+
+#elasticsearch
+ES_INDEX = 'answerly'
+ES_HOST = 'localhost'
+ES_PORT = '9200'
+
 # markdownify
 MARKDOWNIFY = {
     "default": {

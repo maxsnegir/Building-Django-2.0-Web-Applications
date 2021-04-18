@@ -4,10 +4,11 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils import timezone
 from django.views.generic import CreateView, DetailView, UpdateView, \
-    DayArchiveView, RedirectView
+    DayArchiveView, RedirectView, TemplateView
 
 from qanda.forms import QuestionForm, AnswerAcceptanceForm, AnswerForm
 from qanda.models import Question, Answer
+from qanda.service.elasticsearch import search_for_questions
 
 
 class AskQuestionView(LoginRequiredMixin, CreateView):
@@ -102,7 +103,6 @@ class DailyQuestionList(DayArchiveView):
     date_field = 'created'
     month_format = '%m'
     allow_empty = True
-    # template_name = 'qanda/question_archive_day.html'
 
 
 class TodayQuestionList(RedirectView):
@@ -114,3 +114,15 @@ class TodayQuestionList(RedirectView):
             'month': today.month,
             'day': today.day,
         })
+
+
+class SearchView(TemplateView):
+    template_name = 'qanda/search.html'
+
+    def get_context_data(self, **kwargs):
+        query = self.request.GET.get('q', None)
+        context = super().get_context_data(query=query, **kwargs)
+        if query:
+            results = search_for_questions(query)
+            context['hits'] = results
+        return context
