@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Questions on {{ day }}
+{% endblock %}
+
+{% block content %}
+
+
+    <div class="col-sm-12">
+        <h1>Highest Voted Question of {{ day }}</h1>
+        <ul>
+            {% for question in object_list %}
+                <li>
+                    {{ question.votes }}
+                    <a href="{{ question.get_absolute_url }}">{{ question }}</a>
+                    by {{ question.user }} on {{ question.created }}
+                </li>
+            {% empty %}
+                <li>
+                    ...Everyone thinks they know everything today
+                </li>
+            {% endfor %}
+        </ul>
+        <div>
+            {% if previous_day %}
+                <a href="
+{% url "qanda:daily_questions" previous_day.year previous_day.month previous_day.day %}">
+                    << Previous day
+                </a>
+            {% endif %}
+            {% if next_day %}
+                <a href="
+{% url "qanda:daily_questions" next_day.year next_day.month next_day.day %}">
+                    Next day >>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
